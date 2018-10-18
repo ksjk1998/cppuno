@@ -44,6 +44,9 @@ public:
   void dealCard(index) {
    cards.erase(index);
   }
+  void drawCard(Card c) {
+   cards.push_back(c);
+  }
 
  vector<Card> cards;
 };
@@ -74,7 +77,19 @@ int main() {
  string event;
  string choice;
  while (!playerHasWon) {
-   // have event occur to player
+   if (event == "+4") {
+    cardsToDraw += 4;
+   }
+   else if (event == "+2") {
+    cardsToDraw += 2;
+   }
+   else if (event == "cancel") {
+    playersTurn = false;
+   }
+   for (int i = 0; i < cardsToDraw;i++) {
+    players.at(turns % players.size()).drawCard(deck.back());
+    deck.pop_back();
+   }
    event = "none";
    choice = "";
    valid == false;
@@ -112,13 +127,15 @@ int main() {
         event = "cancel";
        }
        else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '%') {
-        event = "reverse";
+        if (isReversed) {
+         isReversed = false;
+        }
+	else {
+         isReversed = true;
+        }
        }
        else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '&') {
         event = "+2";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '*') {
-        event = "wheel"
        }
        else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '@') {
         event = "+4";
@@ -140,7 +157,8 @@ int main() {
     playerHasWon = true;
    }
    else if (token.at(0) == "draw") {
-    // draw card from deck
+    players.at(turns % players.size()).drawCard(deck.back());
+    deck.pop_back();
     valid = false;
    }
    else {
@@ -153,8 +171,12 @@ int main() {
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
   }
-  // reverse rotation when needed
-  turns++;
+  if (isReversed) {
+   turns--;
+  }
+  else {
+   turns++;
+  }
  }
  return 0;
 }
