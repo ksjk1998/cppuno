@@ -28,6 +28,9 @@ public:
  char getBoth() {
   return type, color;
  }
+ void changeColor(char c) {
+  color = c;
+ }
  char type;
  char color;
 };
@@ -63,7 +66,8 @@ bool playersTurn = true;
 bool isReversed =false;
 int turns = 0;
 int cardsToDraw = 0;
-
+string line;
+string event;
 
 int main() {
  srand (time(NULL));
@@ -78,6 +82,8 @@ int main() {
   players.push_back(Player(hand));
   hand.clear();
  }
+ centerPile.push_back(deck.back());
+ deck.pop_back();
 
  string event;
  string choice;
@@ -95,9 +101,9 @@ int main() {
     playersTurn = false;
    }
    // option to 'jump in' must check all players to see if they have at least one card that perfectly matches the top card in the center pile
-   // then cach player must have the option to place that card in the center pile regardless if it is the players turn
+   // then each player must have the option to place that card in the center pile regardless if it is the players turn
    
-   // option to challenge opponent or deal the same card to the center pile, stacking the number of cards to draw
+   // option to challenge opponent (+4) and/or deal the same card to the center pile, stacking the number of cards to draw
    
    for (int i = 0; i < cardsToDraw;i++) {
     players.at(turns % players.size()).drawCard(deck.back());
@@ -108,12 +114,14 @@ int main() {
    choice = "";
    valid == false;
    while (!valid && playersTurn) {
-    cin >> choice;
+    cout << "player " << turns % players.size() << " turn: ";
+    getline(cin, choice);
     vector<string> tokens;
     stringstream check1(choice);
-    string intermediate;
-    while(getline(check1, intermediate, ' ')) {
-        tokens.push_back(intermediate);
+    string intmd;
+    
+    while(getline(check1, intmd, ' ')) {
+     tokens.push_back(intmd);
     }
     if (tokens.at(0) == "table") {
 
@@ -128,9 +136,10 @@ int main() {
      }
 
      cout << "cards in the center pile: ";
-     for (Card c: centerPile)
-
-      cout << c.getType() << endl;
+     for (Card c: centerPile) {
+      cout << c.getType();
+      cout << c.getColor() << " ";
+     }
 
      cout << endl;
 
@@ -138,11 +147,10 @@ int main() {
     }
     else if (tokens.at(0) == "deal") {
      try {
-
-       string toke = tokens.at(1);
-       if (players.at(turns % players.size()).getCards().at((int)toke[0]).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == 'N') {
+       int toke = stoi(tokens.at(1));
+       if (players.at(turns % players.size()).getCards().at(toke).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at(toke).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at(toke).getColor() == 'N') {
        valid = true;
-       switch (int(players.at(turns % players.size()).getCards().at((int)toke[0]).getType())) {
+       switch (int(players.at(turns % players.size()).getCards().at(toke).getType())) {
        case '/':
 	 event = "cancel";
 	 break;
@@ -153,14 +161,15 @@ int main() {
 	 event = "+2";
 	 break;
        case '*':
-	 event = "wheel";
+	 // change color based off of token 2
 	 break;
        case '@':
+         // change color based off of token 2
 	 event = "+4";
        }
 
-       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)toke[0]));
-       players.at(turns % players.size()).dealCard((int)toke[0]);
+       centerPile.push_back(players.at(turns % players.size()).getCards().at(toke));
+       players.at(turns % players.size()).dealCard(toke);
        }
 
       else {
@@ -173,10 +182,6 @@ int main() {
       valid == false;
      }
    }
-
-   if (players.at(turns % players.size()).getCards().size() == 0) {
-    playerHasWon = true;
-   }
    else if (tokens.at(0) == "draw") {
     players.at(turns % players.size()).drawCard(deck.back());
     deck.pop_back();
@@ -186,16 +191,24 @@ int main() {
     cout << "try again \n";
     valid == false;
    }
+
+   if (players.at(turns % players.size()).getCards().size() == 0) {
+    playerHasWon = true;
+   }
   }
 
   if (deck.size() == 0) {
-
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
   }
   if (isReversed) {
    turns--;
+  }
+  else if (isReversed && players.size() == 2) {
+   event = "cancel";
+   turns++;
+   isReversed = false;
   }
   else {
    turns++;
