@@ -113,7 +113,7 @@ int main() {
    event = "none";
    choice = "";
    valid == false;
-   while (!valid && playersTurn) {
+   do {
     cout << "player " << turns % players.size() << " turn: ";
     getline(cin, choice);
     vector<string> tokens;
@@ -176,7 +176,6 @@ int main() {
        valid = false;
       }
      }
-
      catch (...) {
       cout << "incorrect token(s) \n";
       valid == false;
@@ -195,7 +194,7 @@ int main() {
    if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
-  }
+  } while (!valid && playersTurn);
 
   if (deck.size() == 0) {
    deck = centerPile;
