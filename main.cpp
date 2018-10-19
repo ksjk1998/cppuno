@@ -106,9 +106,10 @@ int main() {
     }
     else if (tokens.at(0) == "deal") {
      try {
-      if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)).getColor() == 'N') {
+       string toke = tokens.at(1);
+       if (players.at(turns % players.size()).getCards().at((int)toke[0]).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == 'N') {
        valid = true;
-       switch (players.at(turns % players.size()).getCards().at((int)tokens.at(1))) {
+       switch (int(players.at(turns % players.size()).getCards().at((int)toke[0]).getType())) {
        case '/':
 	 event = "cancel";
 	 break;
@@ -125,19 +126,19 @@ int main() {
 	 event = "+4";
        }
 
-       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)tokens.at(1)));
-       players.at(turns % players.size()).dealCard((int)tokens.at(1));
-      }
+       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)toke[0]));
+       players.at(turns % players.size()).dealCard((int)toke[0]);
+       }
       else {
        valid = false;
       }
      }
-     catch () {
+     catch (bool) {
       cout << "incorrect token(s) \n";
       valid == false;
      }
    }
-   if (size(player.getCards()) == 0) {
+    if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
    else if (tokens.at(0) == "draw") {
