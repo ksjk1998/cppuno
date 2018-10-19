@@ -1,3 +1,4 @@
+// the rules were based off of this link https://en.wikipedia.org/wiki/Uno_(card_game) all house rules are planned to make it in the final version
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -41,8 +42,8 @@ public:
   vector<Card> getCards() {
    return cards;
   }
-  void dealCard(index) {
-   cards.erase(index);
+  void dealCard(int index) {
+   cards.erase(cards.begin() + index);
   }
   void drawCard(Card c) {
    cards.push_back(c);
@@ -58,7 +59,10 @@ vector<Card> centerPile;
 vector<Player> players;
 bool playerHasWon = false;
 bool valid;
+bool playersTurn = true;
+bool isReversed =false;
 int turns = 0;
+int cardsToDraw = 0;
 
 int main() {
  srand (time(NULL));
@@ -77,33 +81,42 @@ int main() {
  string event;
  string choice;
  while (!playerHasWon) {
+   playersTurn = true;
    if (event == "+4") {
     cardsToDraw += 4;
+    playersTurn = false;
    }
    else if (event == "+2") {
     cardsToDraw += 2;
+    playersTurn = false;
    }
    else if (event == "cancel") {
     playersTurn = false;
    }
+   // option to 'jump in' must check all players to see if they have at least one card that perfectly matches the top card in the center pile
+   // then cach player must have the option to place that card in the center pile regardless if it is the players turn
+   
+   // option to challenge opponent or deal the same card to the center pile, stacking the number of cards to draw
+   
    for (int i = 0; i < cardsToDraw;i++) {
     players.at(turns % players.size()).drawCard(deck.back());
     deck.pop_back();
    }
+   cardsToDraw = 0;
    event = "none";
    choice = "";
    valid == false;
    while (!valid && playersTurn) {
     cin >> choice;
     vector<string> tokens;
-    stringstream check1(line);
+    stringstream check1(choice);
     string intermediate;
     while(getline(check1, intermediate, ' ')) {
         tokens.push_back(intermediate);
     }
-    if (token.at(0) == "table") {
+    if (tokens.at(0) == "table") {
 
-     cout << "your cards: "
+     cout << "your cards: ";
      for (Card c: players.at(turns % players.size()).getCards())
       cout << c.getType() << c.getColor() << ", ";
      cout << endl;
@@ -113,20 +126,20 @@ int main() {
      }
 
      cout << "cards in the center pile: ";
-     for (Cards c: ceterPile)
-      cout << c.GetType << endl;
+     for (Card c: centerPile)
+      cout << c.getType() << endl;
      cout << endl;
 
       cout << "the deck has " <<  deck.size() << " cards in it \n";
     }
-    else if (token.at(0) == "deal") {
+    else if (tokens.at(0) == "deal") {
      try {
-      if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)token.at(1)) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)token.at(1)).getColor() == 'N') {
+      if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]).getColor() == 'N') {
        valid = true;
-       if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '/') {
+       if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '/') {
         event = "cancel";
        }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '%') {
+       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '%') {
         if (isReversed) {
          isReversed = false;
         }
@@ -134,29 +147,29 @@ int main() {
          isReversed = true;
         }
        }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '&') {
+       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '&') {
         event = "+2";
        }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '@') {
+       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '@') {
         event = "+4";
        }
 
-       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)token.at(1)));
-       players.at(turns % players.size()).dealCard((int)token.at(1));
+       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]));
+       players.at(turns % players.size()).dealCard((int)tokens.at(1)[0]);
      }
       else {
        valid = false;
       }
      }
-     catch () {
+     catch (...) {
       cout << "incorrect token(s) \n";
-      valid == false
+      valid == false;
      }
    }
-   if (size(player.getCards()) == 0) {
+   if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
-   else if (token.at(0) == "draw") {
+   else if (tokens.at(0) == "draw") {
     players.at(turns % players.size()).drawCard(deck.back());
     deck.pop_back();
     valid = false;
@@ -166,7 +179,7 @@ int main() {
     valid == false;
    }
   }
-  if (size(deck) = 0) {
+  if (deck.size() == 0) {
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
