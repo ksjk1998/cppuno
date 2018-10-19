@@ -64,6 +64,7 @@ bool isReversed =false;
 int turns = 0;
 int cardsToDraw = 0;
 
+
 int main() {
  srand (time(NULL));
  random_shuffle(deck.begin(), deck.end());
@@ -117,6 +118,7 @@ int main() {
     if (tokens.at(0) == "table") {
 
      cout << "your cards: ";
+
      for (Card c: players.at(turns % players.size()).getCards())
       cout << c.getType() << c.getColor() << ", ";
      cout << endl;
@@ -127,45 +129,51 @@ int main() {
 
      cout << "cards in the center pile: ";
      for (Card c: centerPile)
+
       cout << c.getType() << endl;
+
      cout << endl;
 
       cout << "the deck has " <<  deck.size() << " cards in it \n";
     }
     else if (tokens.at(0) == "deal") {
      try {
-      if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]).getColor() == 'N') {
+
+       string toke = tokens.at(1);
+       if (players.at(turns % players.size()).getCards().at((int)toke[0]).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == 'N') {
        valid = true;
-       if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '/') {
-        event = "cancel";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '%') {
-        if (isReversed) {
-         isReversed = false;
-        }
-	else {
-         isReversed = true;
-        }
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '&') {
-        event = "+2";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]) == '@') {
-        event = "+4";
+       switch (int(players.at(turns % players.size()).getCards().at((int)toke[0]).getType())) {
+       case '/':
+	 event = "cancel";
+	 break;
+       case '%':
+	 event = "reverse";
+	 break;
+       case  '&':
+	 event = "+2";
+	 break;
+       case '*':
+	 event = "wheel";
+	 break;
+       case '@':
+	 event = "+4";
        }
 
-       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)tokens.at(1)[0]));
-       players.at(turns % players.size()).dealCard((int)tokens.at(1)[0]);
-     }
+       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)toke[0]));
+       players.at(turns % players.size()).dealCard((int)toke[0]);
+       }
+
       else {
        valid = false;
       }
      }
+
      catch (...) {
       cout << "incorrect token(s) \n";
       valid == false;
      }
    }
+
    if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
@@ -179,7 +187,9 @@ int main() {
     valid == false;
    }
   }
+
   if (deck.size() == 0) {
+
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
@@ -192,4 +202,4 @@ int main() {
   }
  }
  return 0;
-}
+}//
