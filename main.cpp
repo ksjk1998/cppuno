@@ -1,3 +1,4 @@
+// the rules were based off of this link https://en.wikipedia.org/wiki/Uno_(card_game) all house rules are planned to make it in the final version
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -42,7 +43,10 @@ public:
    return cards;
   }
   void dealCard(int index) {
-    cards.erase(cards.begin()+index);
+   cards.erase(cards.begin() + index);
+  }
+  void drawCard(Card c) {
+   cards.push_back(c);
   }
 
  vector<Card> cards;
@@ -56,7 +60,11 @@ vector<Player> players;
 bool playerHasWon = false;
 bool valid;
 bool playersTurn = true;
+bool isReversed =false;
 int turns = 0;
+int cardsToDraw = 0;
+
+
 int main() {
  srand (time(NULL));
  random_shuffle(deck.begin(), deck.end());
@@ -74,7 +82,28 @@ int main() {
  string event;
  string choice;
  while (!playerHasWon) {
-   // have event occur to player
+   playersTurn = true;
+   if (event == "+4") {
+    cardsToDraw += 4;
+    playersTurn = false;
+   }
+   else if (event == "+2") {
+    cardsToDraw += 2;
+    playersTurn = false;
+   }
+   else if (event == "cancel") {
+    playersTurn = false;
+   }
+   // option to 'jump in' must check all players to see if they have at least one card that perfectly matches the top card in the center pile
+   // then cach player must have the option to place that card in the center pile regardless if it is the players turn
+   
+   // option to challenge opponent or deal the same card to the center pile, stacking the number of cards to draw
+   
+   for (int i = 0; i < cardsToDraw;i++) {
+    players.at(turns % players.size()).drawCard(deck.back());
+    deck.pop_back();
+   }
+   cardsToDraw = 0;
    event = "none";
    choice = "";
    valid == false;
@@ -88,7 +117,8 @@ int main() {
     }
     if (tokens.at(0) == "table") {
 
-      cout << "your cards: ";
+     cout << "your cards: ";
+
      for (Card c: players.at(turns % players.size()).getCards())
       cout << c.getType() << c.getColor() << ", ";
      cout << endl;
@@ -99,13 +129,16 @@ int main() {
 
      cout << "cards in the center pile: ";
      for (Card c: centerPile)
-       cout << c.getType() << endl;
+
+      cout << c.getType() << endl;
+
      cout << endl;
 
       cout << "the deck has " <<  deck.size() << " cards in it \n";
     }
     else if (tokens.at(0) == "deal") {
      try {
+
        string toke = tokens.at(1);
        if (players.at(turns % players.size()).getCards().at((int)toke[0]).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)toke[0]).getColor() == 'N') {
        valid = true;
@@ -129,20 +162,24 @@ int main() {
        centerPile.push_back(players.at(turns % players.size()).getCards().at((int)toke[0]));
        players.at(turns % players.size()).dealCard((int)toke[0]);
        }
+
       else {
        valid = false;
       }
      }
-     catch (bool) {
+
+     catch (...) {
       cout << "incorrect token(s) \n";
       valid == false;
      }
    }
-    if (players.at(turns % players.size()).getCards().size() == 0) {
+
+   if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
    else if (tokens.at(0) == "draw") {
-    // draw card from deck
+    players.at(turns % players.size()).drawCard(deck.back());
+    deck.pop_back();
     valid = false;
    }
    else {
@@ -150,13 +187,19 @@ int main() {
     valid == false;
    }
   }
-   if (deck.size() == 0) {
+
+  if (deck.size() == 0) {
+
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
   }
-  // reverse rotation when needed
-  turns++;
+  if (isReversed) {
+   turns--;
+  }
+  else {
+   turns++;
+  }
  }
  return 0;
 }//
