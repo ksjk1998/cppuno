@@ -41,8 +41,8 @@ public:
   vector<Card> getCards() {
    return cards;
   }
-  void dealCard(index) {
-   cards.erase(index);
+  void dealCard(int index) {
+    cards.erase(cards.begin()+index);
   }
 
  vector<Card> cards;
@@ -55,8 +55,8 @@ vector<Card> centerPile;
 vector<Player> players;
 bool playerHasWon = false;
 bool valid;
+bool playersTurn = true;
 int turns = 0;
-
 int main() {
  srand (time(NULL));
  random_shuffle(deck.begin(), deck.end());
@@ -81,14 +81,14 @@ int main() {
    while (!valid && playersTurn) {
     cin >> choice;
     vector<string> tokens;
-    stringstream check1(line);
+    stringstream check1(choice);
     string intermediate;
     while(getline(check1, intermediate, ' ')) {
         tokens.push_back(intermediate);
     }
-    if (token.at(0) == "table") {
+    if (tokens.at(0) == "table") {
 
-     cout << "your cards: "
+      cout << "your cards: ";
      for (Card c: players.at(turns % players.size()).getCards())
       cout << c.getType() << c.getColor() << ", ";
      cout << endl;
@@ -98,48 +98,49 @@ int main() {
      }
 
      cout << "cards in the center pile: ";
-     for (Cards c: ceterPile)
-      cout << c.GetType << endl;
+     for (Card c: centerPile)
+       cout << c.getType() << endl;
      cout << endl;
 
       cout << "the deck has " <<  deck.size() << " cards in it \n";
     }
-    else if (token.at(0) == "deal") {
+    else if (tokens.at(0) == "deal") {
      try {
-      if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)token.at(1)) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)token.at(1)).getColor() == 'N') {
+      if (players.at(turns % players.size()).getCards().at((int)tokens.at(1)) == centerPile.back().getType() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)) == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at((int)tokens.at(1)).getColor() == 'N') {
        valid = true;
-       if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '/') {
-        event = "cancel";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '%') {
-        event = "reverse";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '&') {
-        event = "+2";
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '*') {
-        event = "wheel"
-       }
-       else if (players.at(turns % players.size()).getCards().at((int)token.at(1)) == '@') {
-        event = "+4";
+       switch (players.at(turns % players.size()).getCards().at((int)tokens.at(1))) {
+       case '/':
+	 event = "cancel";
+	 break;
+       case '%':
+	 event = "reverse";
+	 break;
+       case  '&':
+	 event = "+2";
+	 break;
+       case '*':
+	 event = "wheel";
+	 break;
+       case '@':
+	 event = "+4";
        }
 
-       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)token.at(1)));
-       players.at(turns % players.size()).dealCard((int)token.at(1));
-     }
+       centerPile.push_back(players.at(turns % players.size()).getCards().at((int)tokens.at(1)));
+       players.at(turns % players.size()).dealCard((int)tokens.at(1));
+      }
       else {
        valid = false;
       }
      }
      catch () {
       cout << "incorrect token(s) \n";
-      valid == false
+      valid == false;
      }
    }
    if (size(player.getCards()) == 0) {
     playerHasWon = true;
    }
-   else if (token.at(0) == "draw") {
+   else if (tokens.at(0) == "draw") {
     // draw card from deck
     valid = false;
    }
@@ -148,7 +149,7 @@ int main() {
     valid == false;
    }
   }
-  if (size(deck) = 0) {
+   if (deck.size() == 0) {
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
@@ -157,4 +158,4 @@ int main() {
   turns++;
  }
  return 0;
-}
+}//
