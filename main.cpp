@@ -84,10 +84,22 @@ int main() {
  }
  centerPile.push_back(deck.back());
  deck.pop_back();
+ if (centerPile.at(0).getColor() == 'N') {
+  int r = rand() % 3;
+  if (r == 0) 
+   centerPile.at(0).changeColor('Y');
+  else if (r == 1) 
+   centerPile.at(0).changeColor('G');
+  else if (r == 2) 
+   centerPile.at(0).changeColor('B');
+  else if (r == 3) 
+   centerPile.at(0).changeColor('R');
+ }
 
  string event;
  string choice;
- while (!playerHasWon) {
+ vector<string> tokens;
+ do {
    playersTurn = true;
    if (event == "+4") {
     cardsToDraw += 4;
@@ -100,15 +112,145 @@ int main() {
    else if (event == "cancel") {
     playersTurn = false;
    }
-   // option to 'jump in' must check all players to see if they have at least one card that perfectly matches the top card in the center pile
-   // then each player must have the option to place that card in the center pile regardless if it is the players turn
+   tokens.clear();
+   int jumpInCounter = players.size();
+   int tickFoward = 0;
+   while (event == "none" || event =="cancel" && jumpInCounter > 0)
+    for (int i = turns; i < turns + players.size();i++) {
+     int canJumpIn;
+     for (int j = 0; j < players.at(i).getCards().size();j++)
+      if (players.at(i).getCards().at(j).getType() == centerPile.back().getType() && players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor())
+       canJumpIn = j;
+     if (canJumpIn == NULL) {
+      canJumpIn = -1;
+      jumpInCounter--;
+     }
+     if (canJumpIn > -1) {
+      cout << "your cards: ";
+      for (Card c: players.at(i % players.size()).getCards())
+       cout << c.getType() << c.getColor() << ", ";
+      cout << endl;
+ 
+      cout << "cards in the center pile: ";
+      for (Card c: centerPile) {
+       cout << c.getType();
+       cout << c.getColor() << ", ";
+      }
+
+      cout << "player " << i % players.size() << " can jump in with a " << players.at(i % players.size()).getCards().at(canJumpIn).getType() << " card \nwould you like to jump in?(yes): ";
    
-   // option to challenge opponent (+4) and/or deal the same card to the center pile, stacking the number of cards to draw
+      getline(cin, choice);
+      stringstream check1(choice);
+      string intmd;
+     
+      while(getline(check1, intmd, ' ')) {
+       tokens.push_back(intmd);
+      }
+     }
+     if (tokens.at(0) == "yes") {
+      cout << "the card will be played";
+      centerPile.push_back(players.at(i % players.size()).getCards().at(canJumpIn));
+      players.at(i % players.size()).dealCard(canJumpIn);
+      tickFoward = i;
+     }
+     else {
+      cout << "you chose to let the oppurtunity pass\n";
+      jumpInCounter--;
+     }
+    }
+   tokens.clear();
+   turns = tickFoward;
+
+   while (event == "+4" || event == "+2") {
+    int prev = 0;
+    if (isReversed) {
+     prev = 1;
+    }
+    else {
+     prev = -1;
+    }
+
+    int playerHasCard;
+    for (int i = 0; i < players.at(turns % players.size()).getCards().size();i++)
+     if (players.at(turns % players.size()).getCards().at(i).getType() == centerPile.back().getType())
+      playerHasCard = i;
+    if (playerHasCard == NULL)
+     playerHasCard = -1; 
+      
+    bool prevPlayerCouldvePlayedAnotherCard;
+    for (Card c:players.at(turns + prev % players.size()).getCards())
+     if(c.getColor() == centerPile.at(centerPile.size() - 1).getColor() || c.getType() == centerPile.at(centerPile.size() - 1).getType() || c.getType() == '*')
+      prevPlayerCouldvePlayedAnotherCard = true;
+    if (prevPlayerCouldvePlayedAnotherCard == NULL)
+     prevPlayerCouldvePlayedAnotherCard = false;
+
+    cout << "your cards: ";
+    for (Card c: players.at(turns % players.size()).getCards())
+     cout << c.getType() << c.getColor() << ", ";
+    cout << endl;
+
+    cout << "cards in the center pile: ";
+    for (Card c: centerPile) {
+     cout << c.getType();
+     cout << c.getColor() << ", ";
+    }
+
+    cout << "player " << turns % players.size() << " will have to draw " << cardsToDraw << " cards \nwould you like to challenge this move?(yes) or would you like to deal your +4 card?(deal): ";
    
+    getline(cin, choice);
+    stringstream check1(choice);
+    string intmd;
+    
+    while(getline(check1, intmd, ' ')) {
+     tokens.push_back(intmd);
+    }
+    if (tokens.at(0) == "yes" && event == "+4" && prevPlayerCouldvePlayedAnotherCard) {
+     cout << "your challenge was correct, previous player must now draw your cards to draw +2, and it is your turn. But, the card in the center does not get withdrawn\n";
+     playersTurn = true;
+     cardsToDraw += 2;
+     for (int i = 0; i < cardsToDraw;i++) {
+      players.at(turns + prev % players.size()).drawCard(deck.back());
+      deck.pop_back();
+     }
+     cout << "player " << turns + prev % players.size() << " has picked up " << cardsToDraw << " cards \n";
+     cardsToDraw = 0;
+     event = "none";
+     playersTurn = true;
+    }
+    else if (tokens.at(0) == "yes" && event == "+4" && !(prevPlayerCouldvePlayedAnotherCard)) {
+     cout << "your challenge was incorrect, you must now draw your cards to draw +2, and it is not your turn\n";
+     cardsToDraw += 2;
+     event = "none";
+    }
+    else if (tokens.at(0) == "yes" && event != "+4") {
+     cout << "you can only do that to +4 cards, continuing...\n";
+     event = "none";
+    }
+    else if (tokens.at(0) == "deal" && playerHasCard > -1) {
+     cout << "you will deal the matching card you have\n";
+     centerPile.push_back(players.at(turns % players.size()).getCards().at(playerHasCard));
+     players.at(turns % players.size()).dealCard(playerHasCard);
+     if (event == "+4") 
+      cardsToDraw += 4;
+     else if (event == "+2")
+      cardsToDraw += 2;
+     turns -= prev;
+    }
+    else if (tokens.at(0) == "deal" && playerHasCard == -1) {
+     cout << "you have no matching cards in your deck, continuing...\n";
+     event = "none";
+    }
+    else {
+     cout << "you have chosen to accept the move and do nothing of note\n";
+     event = "none";
+    }
+   }
+   tokens.clear();
    for (int i = 0; i < cardsToDraw;i++) {
     players.at(turns % players.size()).drawCard(deck.back());
     deck.pop_back();
    }
+   cout << "player " << turns % players.size() << " has picked up " << cardsToDraw << " cards \n";
    cardsToDraw = 0;
    event = "none";
    choice = "";
@@ -126,7 +268,6 @@ int main() {
     if (tokens.at(0) == "table") {
 
      cout << "your cards: ";
-
      for (Card c: players.at(turns % players.size()).getCards())
       cout << c.getType() << c.getColor() << ", ";
      cout << endl;
@@ -138,7 +279,7 @@ int main() {
      cout << "cards in the center pile: ";
      for (Card c: centerPile) {
       cout << c.getType();
-      cout << c.getColor() << " ";
+      cout << c.getColor() << ", ";
      }
 
      cout << endl;
@@ -161,10 +302,10 @@ int main() {
 	 event = "+2";
 	 break;
        case '*':
-	 // change color based off of token 2
+         players.at(turns % players.size()).getCards().at(toke).changeColor(tokens.at(2)[0]);
 	 break;
-       case '@':
-         // change color based off of token 2
+       case '@': 
+         players.at(turns % players.size()).getCards().at(toke).changeColor(tokens.at(2)[0]);
 	 event = "+4";
        }
 
@@ -201,17 +342,19 @@ int main() {
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
   }
-  if (isReversed) {
+  if (playerHasWon) {}
+  else if (isReversed) {
    turns--;
   }
   else if (isReversed && players.size() == 2) {
    event = "cancel";
    turns++;
    isReversed = false;
-  }
+  } 
   else {
    turns++;
   }
- }
+ } while (!playerHasWon);
+ cout << "player " << turns % players.size() << " Has won the game\n";
  return 0;
-}//
+}
