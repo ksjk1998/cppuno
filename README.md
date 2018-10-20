@@ -1,0 +1,1 @@
+this program is meant to use the rules set within this wikipedia article https://en.wikipedia.org/wiki/Uno_(card_game) to create a machene learning algorithm that can find general strategies or tactics that can master the game
