@@ -16,9 +16,9 @@ public:
  Card(char t, char c) :
   type(t),
   color(c)
-
+  
   {}
-
+  
  char getType() {
   return type;
  }
@@ -55,6 +55,63 @@ public:
  vector<Card> cards;
 };
 
+
+class tradAi: public Player {
+  /* The ai should be good enough to strip the population of  *
+   * overly zealous drawers by beating them, but not too good *
+   * that the ML ai never beats it after getting over that.   *
+   * it may also be used for testing until the ML ai is made. */
+  int getValue(Card& card) {
+    int cType = card.getType();
+    if (cType-48<9&&cType>47) return cType-47;
+    else switch (int(cType)) {
+      case '/':
+      case '%':
+	return 10;
+	break;
+      case '&':
+	return 20;
+	break;
+      case '*':
+	return 30;
+	break;
+      case '@':
+	return 40;
+      }
+  }
+  int bestCard(vector<Card> cards) {
+    int best;
+    char highestValue;
+    for (int i = 0;i < cards.size();i++) {
+      if (getValue(cards[i])>highestValue) best=i, highestValue=getValue(cards[i]);
+    }
+    return best;
+  }
+  int cSize(vector<Card> cards) {
+    int out = 0;
+    for (Card x : cards) out++;
+    return out;
+  }
+  int totalValue(vector<Card> cards) {
+    int value;
+    for (Card x : cards) {
+      value+=getValue(x);
+    }
+    return value;
+  }
+  int deckValue(vector<Card> centerPile, vector<Card> hand) {
+    return 960-(totalValue(hand)+totalValue(centerPile)); 
+  }
+  vector<int> handSizes(vector<Player> players) {
+    vector<int> sizes;
+    for (Player& x : players) sizes.push_back(cSize(x.cards));
+    return sizes;
+  }
+  vector<string> move() {
+    
+  }
+};
+// /=10 %=10 &=20 *=30 @=40 85*2=10+80*2=170 170*4=340*2=680 4*30=120 4*40=160 680+120=800 800+160=960
 vector<Card> deck{Card('0', 'R'), Card('1', 'R'), Card('2', 'R'), Card('3', 'R'), Card('4', 'R'), Card('5', 'R'), Card('6', 'R'), Card('7', 'R'), Card('8', 'R'), Card('9', 'R'), Card('/', 'R'), Card('%', 'R'), Card('&', 'R'), Card('0', 'Y'), Card('1', 'Y'), Card('2', 'Y'), Card('3', 'Y'), Card('4', 'Y'), Card('5', 'Y'), Card('6', 'Y'), Card('7', 'Y'), Card('8', 'Y'), Card('9', 'Y'), Card('/', 'Y'), Card('%', 'Y'), Card('&', 'Y'), Card('0', 'G'), Card('1', 'G'), Card('2', 'G'), Card('3', 'G'), Card('4', 'G'), Card('5', 'G'), Card('6', 'G'), Card('7', 'G'), Card('8', 'G'), Card('9', 'G'), Card('/', 'G'), Card('%', 'G'), Card('&', 'G'), Card('0', 'B'), Card('1', 'B'), Card('2', 'B'), Card('3', 'B'), Card('4', 'B'), Card('5', 'B'), Card('6', 'B'), Card('7', 'B'), Card('8', 'B'), Card('9', 'B'), Card('/', 'B'), Card('%', 'B'), Card('&', 'B'), Card('1', 'R'), Card('2', 'R'), Card('3', 'R'), Card('4', 'R'), Card('5', 'R'), Card('6', 'R'), Card('7', 'R'), Card('8', 'R'), Card('9', 'R'), Card('/', 'R'), Card('%', 'R'), Card('&', 'R'), Card('1', 'Y'), Card('2', 'Y'), Card('3', 'Y'), Card('4', 'Y'), Card('5', 'Y'), Card('6', 'Y'), Card('7', 'Y'), Card('8', 'Y'), Card('9', 'Y'), Card('/', 'Y'), Card('%', 'Y'), Card('&', 'Y'), Card('1', 'G'), Card('2', 'G'), Card('3', 'G'), Card('4', 'G'), Card('5', 'G'), Card('6', 'G'), Card('7', 'G'), Card('8', 'G'), Card('9', 'G'), Card('/', 'G'), Card('%', 'G'), Card('&', 'G'), Card('1', 'B'), Card('2', 'B'), Card('3', 'B'), Card('4', 'B'), Card('5', 'B'), Card('6', 'B'), Card('7', 'B'), Card('8', 'B'), Card('9', 'B'), Card('/', 'B'), Card('%', 'B'), Card('&', 'B'), Card('*', 'N'), Card('*', 'N'), Card('*', 'N'), Card('*', 'N'), Card('@', 'N'), Card('@', 'N'), Card('@', 'N'), Card('@', 'N')};
 
 
