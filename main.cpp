@@ -99,6 +99,7 @@ int main() {
  string event;
  string choice;
  vector<string> tokens;
+ tokens.clear();
  do {
    playersTurn = true;
    if (event == "+4") {
@@ -113,17 +114,23 @@ int main() {
     playersTurn = false;
    }
    tokens.clear();
-   int jumpInCounter = players.size();
+   int jumpInCounter;
    int tickFoward = 0;
-   while (event == "none" || event =="cancel" && jumpInCounter > 0)
+   if (event == "none" || event =="cancel" && jumpInCounter > 0) { 
+    jumpInCounter = players.size();
     for (int i = turns; i < turns + players.size();i++) {
-     int canJumpIn;
-     for (int j = 0; j < players.at(i).getCards().size();j++)
-      if (players.at(i).getCards().at(j).getType() == centerPile.back().getType() && players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor())
+     int canJumpIn = -1;
+     cout << "checking player " << i % players.size() << " cards\n";
+     for (int j = 0; j < players.at(i % players.size()).getCards().size();j++) {
+      cout << "check card\n";
+      if (players.at(i % players.size()).getCards().at(j).getType() == centerPile.back().getType() && players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor()) {
        canJumpIn = j;
+      }
+     }
      if (canJumpIn == NULL) {
       canJumpIn = -1;
       jumpInCounter--;
+      cout << "no card. jic now at " << jumpInCounter;
      }
      if (canJumpIn > -1) {
       cout << "your cards: ";
@@ -137,7 +144,7 @@ int main() {
        cout << c.getColor() << ", ";
       }
 
-      cout << "player " << i % players.size() << " can jump in with a " << players.at(i % players.size()).getCards().at(canJumpIn).getType() << " card \nwould you like to jump in?(yes): ";
+      cout << "player " << i % players.size() << " can jump in with a " << players.at(i % players.size()).getCards().at(canJumpIn).getType() << players.at(i % players.size()).getCards().at(canJumpIn).getColor() << " card \nwould you like to jump in?(yes): ";
    
       getline(cin, choice);
       stringstream check1(choice);
@@ -146,20 +153,23 @@ int main() {
       while(getline(check1, intmd, ' ')) {
        tokens.push_back(intmd);
       }
-     }
-     if (tokens.at(0) == "yes") {
-      cout << "the card will be played";
-      centerPile.push_back(players.at(i % players.size()).getCards().at(canJumpIn));
-      players.at(i % players.size()).dealCard(canJumpIn);
-      tickFoward = i;
-     }
-     else {
-      cout << "you chose to let the oppurtunity pass\n";
-      jumpInCounter--;
+      if (tokens.at(0) == "yes") {
+       cout << "the card will be played \n";
+       centerPile.push_back(players.at(i % players.size()).getCards().at(canJumpIn));
+       players.at(i % players.size()).dealCard(canJumpIn);
+       tickFoward = i;
+       jumpInCounter--;
+      }
+      else {
+       cout << "you chose to let the oppurtunity pass \n";
+       jumpInCounter--;
+      }
+      tokens.clear();
      }
     }
-   tokens.clear();
-   turns = tickFoward;
+    cout << jumpInCounter << " ";
+   }
+   turns += tickFoward;
 
    while (event == "+4" || event == "+2") {
     int prev = 0;
@@ -206,16 +216,9 @@ int main() {
     }
     if (tokens.at(0) == "yes" && event == "+4" && prevPlayerCouldvePlayedAnotherCard) {
      cout << "your challenge was correct, previous player must now draw your cards to draw +2, and it is your turn. But, the card in the center does not get withdrawn\n";
-     playersTurn = true;
+     playersTurn = false;
+     turns -= prev;
      cardsToDraw += 2;
-     for (int i = 0; i < cardsToDraw;i++) {
-      players.at(turns + prev % players.size()).drawCard(deck.back());
-      deck.pop_back();
-     }
-     cout << "player " << turns + prev % players.size() << " has picked up " << cardsToDraw << " cards \n";
-     cardsToDraw = 0;
-     event = "none";
-     playersTurn = true;
     }
     else if (tokens.at(0) == "yes" && event == "+4" && !(prevPlayerCouldvePlayedAnotherCard)) {
      cout << "your challenge was incorrect, you must now draw your cards to draw +2, and it is not your turn\n";
@@ -254,7 +257,7 @@ int main() {
    cardsToDraw = 0;
    event = "none";
    choice = "";
-   valid == false;
+   valid = false;
    do {
     cout << "player " << turns % players.size() << " turn: ";
     getline(cin, choice);
@@ -319,7 +322,7 @@ int main() {
      }
      catch (...) {
       cout << "incorrect token(s) \n";
-      valid == false;
+      valid = false;
      }
    }
    else if (tokens.at(0) == "draw") {
