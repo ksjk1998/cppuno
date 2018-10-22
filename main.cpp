@@ -10,8 +10,10 @@
 using namespace std;
 
 class Card {
-
 public:
+
+ char type;
+ char color;
 
  Card(char t, char c) :
   type(t),
@@ -31,8 +33,6 @@ public:
  void changeColor(char c) {
   color = c;
  }
- char type;
- char color;
 };
 
 class Player {
@@ -121,7 +121,8 @@ int main() {
     for (int i = turns; i < turns + players.size();i++) {
      int canJumpIn = NULL;
      for (int j = 0; j < players.at(i % players.size()).getCards().size();j++) {
-      if (players.at(i % players.size()).getCards().at(j).getType() == centerPile.back().getType() && players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor()) {
+      if (players.at(i % players.size()).getCards().at(j).getType() == centerPile.back().getType() &&
+	      players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor()) {
        canJumpIn = j;
       }
      }
@@ -175,7 +176,7 @@ int main() {
      prev = -1;
     }
 
-    int playerHasCard;
+    int playerHasCard = NULL;
     for (int i = 0; i < players.at(turns % players.size()).getCards().size();i++)
      if (players.at(turns % players.size()).getCards().at(i).getType() == centerPile.back().getType())
       playerHasCard = i;
@@ -183,7 +184,7 @@ int main() {
      playerHasCard = -1; 
       
     bool prevPlayerCouldvePlayedAnotherCard;
-    for (Card c:players.at(turns + prev % players.size()).getCards())
+    for (Card c:players.at((turns + prev) % players.size()).getCards())
      if(c.getColor() == centerPile.at(centerPile.size() - 1).getColor() || c.getType() == centerPile.at(centerPile.size() - 1).getType() || c.getType() == '*')
       prevPlayerCouldvePlayedAnotherCard = true;
     if (prevPlayerCouldvePlayedAnotherCard == NULL)
@@ -253,7 +254,7 @@ int main() {
    event = "none";
    choice = "";
    valid = false;
-   do {
+   while (!valid && playersTurn) {
     cout << "player " << turns % players.size() << " turn: ";
     getline(cin, choice);
     vector<string> tokens;
@@ -264,7 +265,8 @@ int main() {
      tokens.push_back(intmd);
     }
     for (string s: tokens)
-     cout << s << endl;
+     cout << s  << "\'\n";
+    cout << tokens.size() << endl;
     if (tokens.at(0) == "table") {
 
      cout << "your cards: ";
@@ -289,7 +291,9 @@ int main() {
     else if (tokens.at(0) == "deal") {
      try {
        int toke = stoi(tokens.at(1));
-       if (players.at(turns % players.size()).getCards().at(toke).getType() == centerPile.back().getType() || players.at(turns % players.size()).getCards().at(toke).getColor() == centerPile.back().getColor() || players.at(turns % players.size()).getCards().at(toke).getColor() == 'N') {
+       if (players.at(turns % players.size()).getCards().at(toke).getType() == centerPile.back().getType() ||
+	       players.at(turns % players.size()).getCards().at(toke).getColor() == centerPile.back().getColor() ||
+	       players.at(turns % players.size()).getCards().at(toke).getColor() == 'N') {
        valid = true;
        switch (int(players.at(turns % players.size()).getCards().at(toke).getType())) {
        case '/':
@@ -302,10 +306,10 @@ int main() {
 	 event = "+2";
 	 break;
        case '*':
-         players.at(turns % players.size()).getCards().at(toke).changeColor(tokens.at(2)[0]);
+         players.at(turns % players.size()).getCards().at(toke).color = tokens.at(2)[0];
 	 break;
        case '@': 
-         players.at(turns % players.size()).getCards().at(toke).changeColor(tokens.at(2)[0]);
+         players.at(turns % players.size()).getCards().at(toke).color = tokens.at(2)[0];
 	 event = "+4";
        }
 
@@ -335,22 +339,29 @@ int main() {
    if (players.at(turns % players.size()).getCards().size() == 0) {
     playerHasWon = true;
    }
-  } while (!valid && playersTurn);
+  }
 
   if (deck.size() == 0) {
    deck = centerPile;
    random_shuffle(deck.begin(), deck.end());
    centerPile.clear();
   }
+  if (event == "reverse") {
+   if (players.size() == 2) {
+    event = "cancel";
+   }
+   else if (isReversed) {
+    isReversed = false;
+   }
+   else if (!isReversed) {
+    isReversed = true;
+   }
+  }
+
   if (playerHasWon) {}
   else if (isReversed) {
    turns--;
   }
-  else if (isReversed && players.size() == 2) {
-   event = "cancel";
-   turns++;
-   isReversed = false;
-  } 
   else {
    turns++;
   }
