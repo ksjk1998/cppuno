@@ -306,10 +306,10 @@ int main() {
 	 event = "+2";
 	 break;
        case '*':
-         players.at(turns % players.size()).getCards().at(toke).color = tokens.at(2)[0];
+         players.at(turns % players.size()).cards.at(toke).changeColor(tokens.at(2)[0]);
 	 break;
        case '@': 
-         players.at(turns % players.size()).getCards().at(toke).color = tokens.at(2)[0];
+         players.at(turns % players.size()).cards.at(toke).changeColor(tokens.at(2)[0]);
 	 event = "+4";
        }
 
