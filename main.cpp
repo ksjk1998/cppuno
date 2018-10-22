@@ -74,7 +74,7 @@ int main() {
  random_shuffle(deck.begin(), deck.end());
  
  vector<Card> hand;
- for (int i = 0; i < 10; i++) {
+ for (int i = 0; i < 2; i++) {
   for (int j = 0; j < 7; j++) {
    hand.push_back(deck.back());
    deck.pop_back();
@@ -114,15 +114,13 @@ int main() {
     playersTurn = false;
    }
    tokens.clear();
-   int jumpInCounter;
+   int jumpInCounter = players.size();
    int tickFoward = 0;
-   if (event == "none" || event =="cancel" && jumpInCounter > 0) { 
+   while ((event == "none" || event =="cancel") && jumpInCounter > 0) {
     jumpInCounter = players.size();
     for (int i = turns; i < turns + players.size();i++) {
-     int canJumpIn = -1;
-     cout << "checking player " << i % players.size() << " cards\n";
+     int canJumpIn = NULL;
      for (int j = 0; j < players.at(i % players.size()).getCards().size();j++) {
-      cout << "check card\n";
       if (players.at(i % players.size()).getCards().at(j).getType() == centerPile.back().getType() && players.at(i % players.size()).getCards().at(j).getColor() == centerPile.back().getColor()) {
        canJumpIn = j;
       }
@@ -130,7 +128,6 @@ int main() {
      if (canJumpIn == NULL) {
       canJumpIn = -1;
       jumpInCounter--;
-      cout << "no card. jic now at " << jumpInCounter;
      }
      if (canJumpIn > -1) {
       cout << "your cards: ";
@@ -158,7 +155,6 @@ int main() {
        centerPile.push_back(players.at(i % players.size()).getCards().at(canJumpIn));
        players.at(i % players.size()).dealCard(canJumpIn);
        tickFoward = i;
-       jumpInCounter--;
       }
       else {
        cout << "you chose to let the oppurtunity pass \n";
@@ -167,7 +163,6 @@ int main() {
       tokens.clear();
      }
     }
-    cout << jumpInCounter << " ";
    }
    turns += tickFoward;
 
@@ -268,6 +263,8 @@ int main() {
     while(getline(check1, intmd, ' ')) {
      tokens.push_back(intmd);
     }
+    for (string s: tokens)
+     cout << s << endl;
     if (tokens.at(0) == "table") {
 
      cout << "your cards: ";
@@ -332,7 +329,7 @@ int main() {
    }
    else {
     cout << "try again \n";
-    valid == false;
+    valid = false;
    }
 
    if (players.at(turns % players.size()).getCards().size() == 0) {
