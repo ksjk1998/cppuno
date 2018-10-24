@@ -5,7 +5,8 @@
 #include <vector>
 #include <iterator>
 #include <ctime> 
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
+#include <sstream>
 
 using namespace std;
 
@@ -168,7 +169,8 @@ int main() {
    turns += tickFoward;
 
    while (event == "+4" || event == "+2") {
-    int prev = 0;
+    tokens.clear();
+    int prev = NULL;
     if (isReversed) {
      prev = 1;
     }
@@ -183,9 +185,12 @@ int main() {
     if (playerHasCard == NULL)
      playerHasCard = -1; 
       
-    bool prevPlayerCouldvePlayedAnotherCard;
+    bool prevPlayerCouldvePlayedAnotherCard = NULL;
+    cout << "player " << (turns + prev) % players.size() << endl;
     for (Card c:players.at((turns + prev) % players.size()).getCards())
-     if(c.getColor() == centerPile.at(centerPile.size() - 1).getColor() || c.getType() == centerPile.at(centerPile.size() - 1).getType() || c.getType() == '*')
+     if(c.getColor() == centerPile[centerPile.size() - 1].getColor() ||
+         c.getType() == centerPile[centerPile.size() - 1].getType() ||
+          c.getType() == '*')
       prevPlayerCouldvePlayedAnotherCard = true;
     if (prevPlayerCouldvePlayedAnotherCard == NULL)
      prevPlayerCouldvePlayedAnotherCard = false;
@@ -213,10 +218,11 @@ int main() {
     if (tokens.at(0) == "yes" && event == "+4" && prevPlayerCouldvePlayedAnotherCard) {
      cout << "your challenge was correct, previous player must now draw your cards to draw +2, and it is your turn. But, the card in the center does not get withdrawn\n";
      playersTurn = false;
+     event = "none";
      turns -= prev;
      cardsToDraw += 2;
     }
-    else if (tokens.at(0) == "yes" && event == "+4" && !(prevPlayerCouldvePlayedAnotherCard)) {
+    else if (tokens.at(0) == "yes" && event == "+4" && !prevPlayerCouldvePlayedAnotherCard) {
      cout << "your challenge was incorrect, you must now draw your cards to draw +2, and it is not your turn\n";
      cardsToDraw += 2;
      event = "none";
@@ -264,9 +270,6 @@ int main() {
     while(getline(check1, intmd, ' ')) {
      tokens.push_back(intmd);
     }
-    for (string s: tokens)
-     cout << s  << "\'\n";
-    cout << tokens.size() << endl;
     if (tokens.at(0) == "table") {
 
      cout << "your cards: ";
@@ -327,6 +330,7 @@ int main() {
      }
    }
    else if (tokens.at(0) == "draw") {
+    cout << deck.back().getType() << deck.back().getColor() << endl;
     players.at(turns % players.size()).drawCard(deck.back());
     deck.pop_back();
     valid = false;
